@@ -1,20 +1,15 @@
 from __future__ import annotations
-import numpy as np
-import rasterio
-from rasterio.enums import Resampling
-from rasterio.transform import from_bounds
-from rasterio.warp import reproject
+from pathlib import Path
 from PIL import Image
-from .tiling import tiles_for_bbox,tile_bounds,quadkey
-def plan_terrain(bbox,max_lod): return {'bbox':tuple(bbox),'max_lod':max_lod,'tiles':len(list(tiles_for_bbox(tuple(bbox),max_lod))),'status':'ready-for-source'}
-def tile_dem(source,bbox,lod,output_dir,size=256):
-    if not source.exists(): raise FileNotFoundError(source)
-    output_dir.mkdir(parents=True,exist_ok=True); tiles=list(tiles_for_bbox(tuple(bbox),lod))
-    with rasterio.open(source) as src:
-        if src.crs is None: raise ValueError('DEM has no CRS')
-        for tile in tiles:
-            west,south,east,north=tile_bounds(tile); transform=from_bounds(west,south,east,north,size,size); dst=np.zeros((size,size),dtype=np.float32)
-            reproject(source=rasterio.band(src,1),destination=dst,src_transform=src.transform,src_crs=src.crs,dst_transform=transform,dst_crs='EPSG:4326',resampling=Resampling.bilinear,dst_nodata=0)
-            lo,hi=np.nanpercentile(dst,[0.1,99.9]); hi=max(hi,lo+1.0); normalized=np.clip((dst-lo)/(hi-lo),0,1)
-            Image.fromarray((normalized*65535).astype(np.uint16),mode='I;16').save(output_dir/f'{quadkey(tile)}.png')
-    return len(tiles)
+def tile_dem(source,bbox,z,out,size=256):
+ import numpy as np,rasterio
+ from rasterio.enums import Resampling
+ from rasterio.warp import transform_bounds
+ from .world import tiles_for_bbox
+ from .imagery import tile_bounds
+ out=Path(out);out.mkdir(parents=True,exist_ok=True);count=0
+ with rasterio.open(source) as src:
+  if not src.crs:raise ValueError("DEM has no CRS")
+  for t in tiles_for_bbox(bbox,z):
+   w,s,e,n=tile_bounds(t);l,b,r,top=transform_bounds("EPSG:4326",src.crs,w,s,e,n,densify_pts=21);win=rasterio.windows.from_bounds(l,b,r,top,src.transform);data=src.read(1,window=win,out_shape=(size,size),resampling=Resampling.bilinear).astype(np.float32);lo,hi=np.nanpercentile(data,[0.1,99.9]);hi=max(hi,lo+1);Image.fromarray((np.clip((data-lo)/(hi-lo),0,1)*65535).astype(np.uint16)).save(out/f"{t.quadkey}.png");count+=1
+ return count

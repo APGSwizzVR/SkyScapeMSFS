@@ -1,24 +1,30 @@
 from __future__ import annotations
 import os,requests
-API='https://api.cesium.com/v1'
-class CesiumError(RuntimeError): pass
-def get_token():
-    token=os.getenv('CESIUM_ION_TOKEN','').strip()
-    if not token or token=='CESIUM ION KEY HERE': raise CesiumError('Cesium ion token is not configured')
-    return token
-def headers(): return {'Authorization':f'Bearer {get_token()}'}
-def request_json(url,timeout=60):
-    try:r=requests.get(url,headers=headers(),timeout=timeout)
-    except requests.RequestException as exc: raise CesiumError(f'Cesium request failed: {exc}') from exc
-    if not r.ok: raise CesiumError(f'Cesium returned HTTP {r.status_code}: {r.text[:500]}')
-    return r.json()
-def check_token(): return request_json(f'{API}/me',20)
-def asset_endpoint(asset_id): return request_json(f'{API}/assets/{asset_id}/endpoint',30)
+API="https://api.cesium.com/v1"
+class CesiumError(RuntimeError):pass
+def token():
+ t=os.getenv("CESIUM_ION_TOKEN","").strip()
+ if not t or t=="CESIUM ION KEY HERE":raise CesiumError("CESIUM_ION_TOKEN is not configured")
+ return t
+def get(path,params=None,timeout=60):
+ r=requests.get(API+path,headers={"Authorization":f"Bearer {token()}"},params=params,timeout=timeout)
+ if not r.ok:raise CesiumError(f"Cesium HTTP {r.status_code}: {r.text[:500]}")
+ return r.json()
+def account():return get("/me")
+def assets(types=None):
+ p={"status":"COMPLETE"}
+ if types:p["type"]=','.join(types)
+ return get("/assets",p).get("items",[])
 def configured_asset_ids():
-    result={}
-    for name in ('imagery','terrain'):
-        raw=os.getenv(f'CESIUM_{name.upper()}_ASSET_ID','').strip()
-        if raw:
-            try: result[name]=int(raw)
-            except ValueError as exc: raise CesiumError(f'CESIUM_{name.upper()}_ASSET_ID must be an integer') from exc
-    return result
+ out={}
+ for k in ("imagery","terrain","buildings"):
+  v=os.getenv(f"CESIUM_{k.upper()}_ASSET_ID","").strip()
+  if v:out[k]=int(v)
+ return out
+def endpoint(asset_id):return get(f"/assets/{int(asset_id)}/endpoint")
+def choose_assets():
+ ids=configured_asset_ids()
+ for a in assets(["IMAGERY","TERRAIN","3DTILES"]):
+  k={"IMAGERY":"imagery","TERRAIN":"terrain","3DTILES":"buildings"}.get(a.get("type"))
+  if k and k not in ids:ids[k]=a["id"]
+ return ids
