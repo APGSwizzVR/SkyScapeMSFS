@@ -1,7 +1,19 @@
 # Data licensing
 
-SkyScape is source code and processing infrastructure. It is not a redistribution bundle for Cesium, Bing, Google, or other third-party datasets.
+SkyScape is processing software, not a redistribution bundle for third-party datasets.
 
-Cesium ion access tokens authenticate access to ion assets. Tokens should be kept out of GitHub and restricted to the minimum scopes/assets needed. See the official Cesium token documentation.
+For every source used in a public release, record:
 
-Before packaging or distributing generated MSFS scenery, record the provider, dataset, licence/version, attribution, modification rights, redistribution rights, and any commercial-use restrictions.
+- provider and dataset name;
+- dataset version/date;
+- licence and attribution requirements;
+- modification rights;
+- redistribution rights for derived data;
+- commercial-use restrictions;
+- API/token restrictions.
+
+A Cesium ion token authenticates access to ion assets. It does not automatically grant permission to redistribute the resulting data. Keep tokens private.
+
+OpenStreetMap data is licensed under the ODbL. OSM-derived data distributed by SkyScape must satisfy the applicable attribution and share-alike requirements.
+
+The public release process should reject a source unless its licence has been explicitly reviewed.

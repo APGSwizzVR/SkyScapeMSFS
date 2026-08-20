@@ -1,24 +1,25 @@
 # SkyScape roadmap
 
-## Core architecture
-- [x] Global region model and bbox builds
-- [x] Quality/LOD profiles
-- [x] Quadtree tile planning
-- [x] Local cache foundation
-- [x] Cesium ion token integration point
-- [x] Provider-separated imagery/terrain/buildings modules
-- [x] CLI and doctor command
+## Implemented
+- Global/bbox/region tile planning
+- Quality/LOD profiles
+- Local cache foundation
+- Cesium ion authentication and asset inspection
+- Licensed GeoTIFF -> MSFS aerial PNG preprocessing
+- Quadkey naming
+- MSFS CGL project generation
+- Automatic Package Tool invocation
+- Build validation
+- DEM preprocessing foundation
+- OSM building acquisition foundation
 
-## Implementation stages
-- [ ] Implement permitted Cesium asset ingestion/export paths
-- [ ] Implement source-specific imagery reprojection/resampling
-- [ ] Generate SDK-valid MSFS 2024 aerial CGLs
-- [ ] Add terrain conversion where the source licence permits it
-- [ ] Add OSM-derived building generation and packaging
-- [ ] Add resumable workers and parallel tile processing
-- [ ] Add LOD-aware disk/memory budgets
-- [ ] Add automated MSFS package validation
-- [ ] Add GUI
-- [ ] Expand global provider profiles
-
-The architecture intentionally supports the whole world while keeping high resolution local and bounded by LOD.
+## Remaining engineering
+- Resumable parallel remote tile workers for sources whose licences permit redistribution
+- Multi-LOD orchestration and storage budgets
+- SDK-validated MSFS terrain CGL generation
+- OSM footprint -> optimized glTF/BGL building generation
+- Water/coastline/landclass processing
+- GUI with job queue, cache manager and progress reporting
+- Release manifest/licence validation
+- Windows installer and signed release builds
+- Integration tests against the installed SDK sample format
