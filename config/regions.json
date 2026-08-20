@@ -1,0 +1,54 @@
+{
+  "regions": {
+    "world": {
+      "description": "Global build preset",
+      "bbox": [
+        -180,
+        -90,
+        180,
+        90
+      ]
+    },
+    "ireland": {
+      "description": "Island of Ireland",
+      "bbox": [
+        -10.7,
+        51.3,
+        -5.3,
+        55.5
+      ]
+    },
+    "uk": {
+      "description": "United Kingdom and Northern Ireland",
+      "bbox": [
+        -8.7,
+        49.8,
+        1.9,
+        60.9
+      ]
+    }
+  },
+  "quality": {
+    "performance": {
+      "max_lod": 12,
+      "description": "Fast, broad coverage"
+    },
+    "balanced": {
+      "max_lod": 16,
+      "description": "Global coverage with higher detail"
+    },
+    "high": {
+      "max_lod": 18,
+      "description": "High detail; substantially larger processing"
+    },
+    "ultra": {
+      "max_lod": 20,
+      "description": "Maximum configured aerial tile detail"
+    }
+  },
+  "defaults": {
+    "quality": "balanced",
+    "tile_size": 256,
+    "cache_enabled": true
+  }
+}
