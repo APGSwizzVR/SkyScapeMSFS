@@ -1,2 +1,2 @@
-"""SkyScape MSFS global scenery pipeline."""
-__version__ = "0.2.0"
+"""SkyScape MSFS global scenery processing pipeline."""
+__version__ = "0.3.0"
