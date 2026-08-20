@@ -1,31 +1,10 @@
 #!/usr/bin/env python3
-"""Placeholder for licensed raster processing.
-
-The eventual implementation will reproject, clip, validate, and tile imagery
-for a selected region. It will only operate on source data the user is allowed
-to process and redistribute.
-"""
-
-from __future__ import annotations
-
-import argparse
 from pathlib import Path
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Process a SkyScape raster")
-    parser.add_argument("input", type=Path, help="Input raster")
-    parser.add_argument("output", type=Path, help="Output directory")
-    args = parser.parse_args()
-
-    if not args.input.exists():
-        raise SystemExit(f"Input does not exist: {args.input}")
-
-    args.output.mkdir(parents=True, exist_ok=True)
-    print(f"Input: {args.input}")
-    print(f"Output: {args.output}")
-    print("Raster processing implementation will be added after the source format is selected.")
-
-
-if __name__ == "__main__":
-    main()
+import argparse
+from skyscape.imagery import tile_local_raster
+from skyscape.config import get_region
+def main():
+ p=argparse.ArgumentParser(description='Convert a licensed GeoTIFF into MSFS aerial PNG tiles'); p.add_argument('input',type=Path); p.add_argument('--region'); p.add_argument('--bbox',nargs=4,type=float); p.add_argument('--lod',type=int,default=18); p.add_argument('--output',type=Path,default=Path('build/tiles')); a=p.parse_args(); bbox=get_region(a.region).bbox if a.region else tuple(a.bbox) if a.bbox else None
+ if bbox is None:p.error('provide --region or --bbox')
+ print(f'Created {tile_local_raster(a.input,bbox,a.lod,a.output)} tiles in {a.output}')
+if __name__=='__main__': main()
