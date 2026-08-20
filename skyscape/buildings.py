@@ -3,16 +3,15 @@ from pathlib import Path
 import json,requests
 from shapely.geometry import shape,box
 OVERPASS='https://overpass-api.de/api/interpreter'
-def plan_buildings(bbox): return {'bbox':tuple(bbox),'status':'ready','source':'OpenStreetMap Overpass','redistribution':'verify ODbL attribution before distribution'}
-def fetch_osm_buildings(bbox,output:Path):
-    west,south,east,north=bbox; query=f'[out:json][timeout:180];(way[building]({south},{west},{north},{east});relation[building]({south},{west},{north},{east}););out geom;'; r=requests.post(OVERPASS,data=query,timeout=210); r.raise_for_status(); output.parent.mkdir(parents=True,exist_ok=True); output.write_text(r.text,encoding='utf-8'); return output
-def filter_buildings(input_json:Path,bbox,output_geojson:Path):
-    data=json.loads(input_json.read_text(encoding='utf-8')); target=box(*bbox); features=[]
-    for element in data.get('elements',[]):
-        geometry=element.get('geometry');
-        if not geometry or len(geometry)<3: continue
-        coords=[(p['lon'],p['lat']) for p in geometry]; poly=shape({'type':'Polygon','coordinates':[coords+[coords[0]]]})
-        if not poly.is_valid: poly=poly.buffer(0)
-        if poly.is_empty or not poly.intersects(target): continue
-        features.append({'type':'Feature','properties':element.get('tags',{}),'geometry':poly.__geo_interface__})
-    output_geojson.parent.mkdir(parents=True,exist_ok=True); output_geojson.write_text(json.dumps({'type':'FeatureCollection','features':features}),encoding='utf-8'); return output_geojson
+def fetch_osm_buildings(bbox,out):
+ w,s,e,n=bbox;q=f'[out:json][timeout:180];way[building]({s},{w},{n},{e});out geom tags;';r=requests.post(OVERPASS,data=q,timeout=240);r.raise_for_status();Path(out).write_text(r.text,encoding='utf-8');return out
+def buildings_geojson(raw,out,bbox):
+ data=json.loads(Path(raw).read_text());clip=box(*bbox);features=[]
+ for el in data.get('elements',[]):
+  g=el.get('geometry')
+  if not g or len(g)<4:continue
+  c=[(p['lon'],p['lat']) for p in g]
+  if c[0]!=c[-1]:c.append(c[0])
+  geom=shape({'type':'Polygon','coordinates':[c]})
+  if geom.is_valid and geom.intersects(clip):features.append({'type':'Feature','properties':el.get('tags',{}),'geometry':geom.__geo_interface__})
+ Path(out).write_text(json.dumps({'type':'FeatureCollection','features':features}),encoding='utf-8');return out
